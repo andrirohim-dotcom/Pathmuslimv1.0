@@ -4,7 +4,7 @@ import { success, error } from '@/lib/api-response';
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Get auth header
@@ -17,7 +17,8 @@ export async function POST(
 
     // Extract user ID from header (in production, from JWT)
     const userId = request.headers.get('x-user-id') || 'mock-user-id';
-    const moduleId = params.id;
+    const resolvedParams = await params;
+    const moduleId = resolvedParams.id;
 
     if (!moduleId) {
       return NextResponse.json(
