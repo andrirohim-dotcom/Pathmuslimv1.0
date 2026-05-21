@@ -41,3 +41,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Override parent gitignore: include our lib/ directory (parent has lib/ for Python)
+!lib/
