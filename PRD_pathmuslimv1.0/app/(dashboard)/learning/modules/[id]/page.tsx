@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { ModuleViewer } from '@/components/learning/ModuleViewer';
+import { MilestoneCelebration } from '@/components/learning/MilestoneCelebration';
 import { ChevronLeftIcon } from 'lucide-react';
 
 interface Module {
@@ -26,6 +27,11 @@ export default function ModuleDetailPage({ params }: { params: { id: string } })
   const [error, setError] = useState<string | null>(null);
   const [isCompleting, setIsCompleting] = useState(false);
   const [completionMessage, setCompletionMessage] = useState<string | null>(null);
+  const [celebration, setCelebration] = useState<{
+    name: string;
+    description: string;
+    nextModuleId?: string;
+  } | null>(null);
 
   const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
   const userId = typeof window !== 'undefined' ? localStorage.getItem('user_id') : null;
@@ -94,17 +100,25 @@ export default function ModuleDetailPage({ params }: { params: { id: string } })
         setModule({ ...module, is_completed: true });
       }
 
-      // Show success message
-      setCompletionMessage('Module completed! Great job! 🎉');
-
-      // Redirect to next module or back to learning page
-      setTimeout(() => {
-        if (data.data?.next_module) {
-          router.push(`/learning/modules/${data.data.next_module.id}`);
-        } else {
-          router.push('/learning');
-        }
-      }, 2000);
+      // Check for newly awarded milestones
+      const milestoneUnlocked = data.data?.milestone_unlocked;
+      if (milestoneUnlocked) {
+        setCelebration({
+          name: milestoneUnlocked.name,
+          description: milestoneUnlocked.description,
+          nextModuleId: data.data?.next_module?.id,
+        });
+      } else {
+        // Show success message and redirect without celebration
+        setCompletionMessage('Module completed! Great job!');
+        setTimeout(() => {
+          if (data.data?.next_module) {
+            router.push(`/learning/modules/${data.data.next_module.id}`);
+          } else {
+            router.push('/learning');
+          }
+        }, 2000);
+      }
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to complete module';
       setError(message);
@@ -152,8 +166,27 @@ export default function ModuleDetailPage({ params }: { params: { id: string } })
     );
   }
 
+  const handleCelebrationDismiss = () => {
+    const nextId = celebration?.nextModuleId;
+    setCelebration(null);
+    if (nextId) {
+      router.push(`/learning/modules/${nextId}`);
+    } else {
+      router.push('/learning');
+    }
+  };
+
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
+      {/* Milestone celebration modal */}
+      {celebration && (
+        <MilestoneCelebration
+          milestoneName={celebration.name}
+          milestoneDescription={celebration.description}
+          onDismiss={handleCelebrationDismiss}
+        />
+      )}
+
       {/* Back button */}
       <Link href="/learning" className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-800 mb-6">
         <ChevronLeftIcon className="w-5 h-5" />

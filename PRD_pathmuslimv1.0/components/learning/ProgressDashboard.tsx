@@ -2,6 +2,22 @@
 
 import React, { useEffect, useState } from 'react';
 import { ModuleService } from '@/lib/services/ModuleService';
+import { MilestonesDisplay } from '@/components/learning/MilestonesDisplay';
+
+interface AchievedMilestone {
+  id: string;
+  name: string;
+  description: string;
+  trigger_condition: { type: string; count?: number };
+  achievement_at: string;
+}
+
+interface NextMilestone {
+  name: string;
+  description: string;
+  trigger_condition: { type: string; count?: number };
+  modules_remaining: number;
+}
 
 interface ProgressData {
   modules_completed: number;
@@ -11,6 +27,11 @@ interface ProgressData {
   milestones: any[];
 }
 
+interface MilestoneData {
+  achieved: AchievedMilestone[];
+  next: NextMilestone | null;
+}
+
 interface ProgressDashboardProps {
   progress: ProgressData;
 }
@@ -18,6 +39,7 @@ interface ProgressDashboardProps {
 export function ProgressDashboard({ progress }: ProgressDashboardProps) {
   const [displayData, setDisplayData] = useState<any>(null);
   const [milestoneInfo, setMilestoneInfo] = useState<any>(null);
+  const [milestoneData, setMilestoneData] = useState<MilestoneData | null>(null);
 
   useEffect(() => {
     const data = ModuleService.formatProgressDisplay(
@@ -32,12 +54,27 @@ export function ProgressDashboard({ progress }: ProgressDashboardProps) {
     if (milestone) {
       setMilestoneInfo(milestone);
     }
+
+    // Fetch milestone data
+    const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
+    const userId = typeof window !== 'undefined' ? localStorage.getItem('user_id') : null;
+    fetch('/api/learning/milestones', {
+      headers: {
+        'Authorization': `Bearer ${token || 'mock-token'}`,
+        'x-user-id': userId || 'mock-user-id',
+      },
+    })
+      .then((res) => res.json())
+      .then((res) => {
+        if (res.success) setMilestoneData(res.data);
+      })
+      .catch(() => null);
   }, [progress]);
 
   if (!displayData) return <div>Loading progress...</div>;
 
   const progressBarWidth = Math.round((progress.modules_completed / progress.total_modules) * 100);
-  const { current, nextThreshold, modulesUntilNext } =
+  const { current, modulesUntilNext } =
     ModuleService.evaluateMilestoneAchievements(progress.modules_completed);
 
   return (
@@ -134,6 +171,11 @@ export function ProgressDashboard({ progress }: ProgressDashboardProps) {
           </h3>
           <p className="text-center text-gray-700">{milestoneInfo.description}</p>
         </div>
+      )}
+
+      {/* Milestones section */}
+      {milestoneData && (
+        <MilestonesDisplay achieved={milestoneData.achieved} next={milestoneData.next} />
       )}
     </div>
   );
