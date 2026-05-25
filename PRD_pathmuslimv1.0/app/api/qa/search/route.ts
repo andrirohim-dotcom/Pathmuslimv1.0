@@ -6,6 +6,70 @@ import { success, error } from '@/lib/api-response';
 const VALID_CATEGORIES: QACategoryValue[] = ['family', 'work', 'spirituality', 'health', 'relationships', 'other'];
 const VALID_SORTS: SortOption[] = ['relevance', 'recent', 'helpful'];
 
+/**
+ * @swagger
+ * /api/qa/search:
+ *   get:
+ *     summary: Search Q&A knowledge base
+ *     description: Search Islamic Q&A pairs with optional filtering by category and sorting
+ *     tags:
+ *       - Q&A
+ *     parameters:
+ *       - in: query
+ *         name: q
+ *         schema:
+ *           type: string
+ *         description: Search query (minimum 2 characters, or use category filter for browsing)
+ *       - in: query
+ *         name: category
+ *         schema:
+ *           type: string
+ *           enum: [family, work, spirituality, health, relationships, other]
+ *         description: Filter by category
+ *       - in: query
+ *         name: sort
+ *         schema:
+ *           type: string
+ *           enum: [relevance, recent, helpful]
+ *           default: relevance
+ *         description: Sort results by relevance, recency, or helpfulness
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 10
+ *           maximum: 50
+ *     responses:
+ *       200:
+ *         description: Search results
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     answers:
+ *                       type: array
+ *                       items:
+ *                         $ref: '#/components/schemas/QAAnswer'
+ *                     total:
+ *                       type: number
+ *                     page:
+ *                       type: number
+ *       400:
+ *         description: Invalid query parameters
+ *       500:
+ *         description: Server error
+ */
 export async function GET(request: NextRequest) {
   const { searchParams } = request.nextUrl;
   const q = searchParams.get('q') ?? '';

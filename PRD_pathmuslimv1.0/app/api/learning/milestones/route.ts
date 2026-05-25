@@ -3,8 +3,36 @@ import { MilestoneService } from '@/lib/services/MilestoneService';
 import { success, error } from '@/lib/api-response';
 
 /**
- * GET /api/learning/milestones
- * Returns user's achieved milestones + next milestone progress
+ * @swagger
+ * /api/learning/milestones:
+ *   get:
+ *     summary: Get user milestones
+ *     description: Returns user's achieved milestones and progress toward next milestone
+ *     tags:
+ *       - Learning
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Milestones data retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     achieved:
+ *                       type: array
+ *                       items:
+ *                         $ref: '#/components/schemas/Milestone'
+ *                     next:
+ *                       $ref: '#/components/schemas/Milestone'
+ *       401:
+ *         description: Authentication required
  */
 export async function GET(request: NextRequest) {
   try {

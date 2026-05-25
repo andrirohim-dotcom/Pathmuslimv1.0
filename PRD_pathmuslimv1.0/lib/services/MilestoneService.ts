@@ -67,7 +67,7 @@ export class MilestoneService {
 
       if (achievedError) throw achievedError;
 
-      const achievedIds = new Set((alreadyAchieved || []).map((a: LearnerMilestone) => a.milestone_id));
+      const achievedIds = new Set((alreadyAchieved || []).map((a: { milestone_id: string }) => a.milestone_id));
 
       // Find milestones whose threshold is now crossed and not yet awarded
       const newlyEarned: LearningMilestone[] = [];

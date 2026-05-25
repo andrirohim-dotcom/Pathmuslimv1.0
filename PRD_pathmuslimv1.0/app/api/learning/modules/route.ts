@@ -2,6 +2,58 @@ import { NextRequest, NextResponse } from 'next/server';
 import { ModuleRepository } from '@/lib/repositories/ModuleRepository';
 import { success, error, parsePagination, createPaginationMetadata } from '@/lib/api-response';
 
+/**
+ * @swagger
+ * /api/learning/modules:
+ *   get:
+ *     summary: List all learning modules
+ *     description: Retrieve paginated list of learning modules available to the authenticated user
+ *     tags:
+ *       - Learning
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *         description: Page number (1-indexed)
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 10
+ *         description: Items per page
+ *     responses:
+ *       200:
+ *         description: List of modules retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Module'
+ *                 meta:
+ *                   type: object
+ *                   properties:
+ *                     total:
+ *                       type: number
+ *                     page:
+ *                       type: number
+ *                     limit:
+ *                       type: number
+ *       401:
+ *         description: Authentication required
+ *       500:
+ *         description: Server error
+ */
 export async function GET(request: NextRequest) {
   try {
     // Get auth header

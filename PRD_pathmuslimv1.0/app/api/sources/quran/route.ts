@@ -1,11 +1,50 @@
-/**
- * GET /api/sources/quran
- * Returns Quranic source references, filterable by surah number
- */
-
 import { NextRequest, NextResponse } from 'next/server';
 import { SourceService } from '@/lib/services/SourceService';
 import { success, error, parsePagination, createPaginationMetadata } from '@/lib/api-response';
+
+/**
+ * @swagger
+ * /api/sources/quran:
+ *   get:
+ *     summary: Get Quranic sources
+ *     description: Retrieve Quranic verses and references, optionally filtered by surah (chapter)
+ *     tags:
+ *       - Sources
+ *     parameters:
+ *       - in: query
+ *         name: surah
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           maximum: 114
+ *         description: Surah number (1-114) to filter by specific chapter
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 10
+ *     responses:
+ *       200:
+ *         description: Quranic sources retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Source'
+ *       400:
+ *         description: Invalid query parameters (e.g., surah out of range)
+ */
 
 const sourceService = new SourceService();
 
